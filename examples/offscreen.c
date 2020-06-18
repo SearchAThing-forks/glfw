@@ -137,7 +137,10 @@ int main(void)
     glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
                           sizeof(vertices[0]), (void*) (sizeof(float) * 2));
 
+    glfwSetWindowSize(window, 800, 600);    
+
     glfwGetFramebufferSize(window, &width, &height);
+    printf("w:%d h:%d\b", width, height);
     ratio = width / (float) height;
 
     glViewport(0, 0, width, height);
