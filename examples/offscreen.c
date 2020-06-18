@@ -23,13 +23,15 @@
 //
 //========================================================================
 
+#include <unistd.h>
+
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
 #if USE_NATIVE_OSMESA
- #define GLFW_EXPOSE_NATIVE_OSMESA
- #include <GLFW/glfw3native.h>
+#define GLFW_EXPOSE_NATIVE_OSMESA
+#include <GLFW/glfw3native.h>
 #endif
 
 #include "linmath.h"
@@ -45,46 +47,45 @@ static const struct
     float x, y;
     float r, g, b;
 } vertices[3] =
-{
-    { -0.6f, -0.4f, 1.f, 0.f, 0.f },
-    {  0.6f, -0.4f, 0.f, 1.f, 0.f },
-    {   0.f,  0.6f, 0.f, 0.f, 1.f }
-};
+    {
+        {-0.6f, -0.4f, 1.f, 0.f, 0.f},
+        {0.6f, -0.4f, 0.f, 1.f, 0.f},
+        {0.f, 0.6f, 0.f, 0.f, 1.f}};
 
-static const char* vertex_shader_text =
-"#version 110\n"
-"uniform mat4 MVP;\n"
-"attribute vec3 vCol;\n"
-"attribute vec2 vPos;\n"
-"varying vec3 color;\n"
-"void main()\n"
-"{\n"
-"    gl_Position = MVP * vec4(vPos, 0.0, 1.0);\n"
-"    color = vCol;\n"
-"}\n";
+static const char *vertex_shader_text =
+    "#version 110\n"
+    "uniform mat4 MVP;\n"
+    "attribute vec3 vCol;\n"
+    "attribute vec2 vPos;\n"
+    "varying vec3 color;\n"
+    "void main()\n"
+    "{\n"
+    "    gl_Position = MVP * vec4(vPos, 0.0, 1.0);\n"
+    "    color = vCol;\n"
+    "}\n";
 
-static const char* fragment_shader_text =
-"#version 110\n"
-"varying vec3 color;\n"
-"void main()\n"
-"{\n"
-"    gl_FragColor = vec4(color, 1.0);\n"
-"}\n";
+static const char *fragment_shader_text =
+    "#version 110\n"
+    "varying vec3 color;\n"
+    "void main()\n"
+    "{\n"
+    "    gl_FragColor = vec4(color, 1.0);\n"
+    "}\n";
 
-static void error_callback(int error, const char* description)
+static void error_callback(int error, const char *description)
 {
     fprintf(stderr, "Error: %s\n", description);
 }
 
 int main(void)
 {
-    GLFWwindow* window;
+    GLFWwindow *window;
     GLuint vertex_buffer, vertex_shader, fragment_shader, program;
     GLint mvp_location, vpos_location, vcol_location;
     float ratio;
     int width, height;
     mat4x4 mvp;
-    char* buffer;
+    char *buffer;
 
     glfwSetErrorCallback(error_callback);
 
@@ -97,7 +98,9 @@ int main(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
-    window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
+    int CREATE_W = 640;
+    int CREATE_H = 480;
+    window = glfwCreateWindow(CREATE_W, CREATE_H, "Simple example", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -132,16 +135,27 @@ int main(void)
 
     glEnableVertexAttribArray(vpos_location);
     glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE,
-                          sizeof(vertices[0]), (void*) 0);
+                          sizeof(vertices[0]), (void *)0);
     glEnableVertexAttribArray(vcol_location);
     glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
-                          sizeof(vertices[0]), (void*) (sizeof(float) * 2));
+                          sizeof(vertices[0]), (void *)(sizeof(float) * 2));
 
-    glfwSetWindowSize(window, 800, 600);    
-
+    int CUSTOM_W = 800, CUSTOM_H = 600;
+    if (CUSTOM_W != CREATE_W || CUSTOM_H != CREATE_H)
+    {
+        glfwSetWindowSize(window, CUSTOM_W, CUSTOM_H);
+        int wc, hc;
+        while (1)
+        {
+            glfwGetWindowSize(window, &wc, &hc);
+            if (wc == CUSTOM_W && hc == CUSTOM_H)
+                break;
+            usleep(50 * 1000); // sleep 50 ms
+        }
+    }
     glfwGetFramebufferSize(window, &width, &height);
-    printf("w:%d h:%d\b", width, height);
-    ratio = width / (float) height;
+    printf("w:%d h:%d\n", width, height);
+    ratio = width / (float)height;
 
     glViewport(0, 0, width, height);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -149,12 +163,12 @@ int main(void)
     mat4x4_ortho(mvp, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
 
     glUseProgram(program);
-    glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp);
+    glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat *)mvp);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glFinish();
 
 #if USE_NATIVE_OSMESA
-    glfwGetOSMesaColorBuffer(window, &width, &height, NULL, (void**) &buffer);
+    glfwGetOSMesaColorBuffer(window, &width, &height, NULL, (void **)&buffer);
 #else
     buffer = calloc(4, width * height);
     glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
@@ -177,4 +191,3 @@ int main(void)
     glfwTerminate();
     exit(EXIT_SUCCESS);
 }
-
