@@ -77,6 +77,20 @@ static void error_callback(int error, const char *description)
     fprintf(stderr, "Error: %s\n", description);
 }
 
+#define CREATE_W 640
+#define CREATE_H 480
+
+#define CUSTOM_W 800
+#define CUSTOM_H 600
+
+int customResizeDone = 0;
+
+void winResizedCallback(GLFWwindow *win, int width, int height)
+{
+    if (width == CUSTOM_W && height == CUSTOM_H) customResizeDone = 1;
+    printf("---> RESIZED TO W:%d H:%d\n", width, height);
+}
+
 int main(void)
 {
     GLFWwindow *window;
@@ -97,9 +111,7 @@ int main(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-
-    int CREATE_W = 640;
-    int CREATE_H = 480;
+    
     window = glfwCreateWindow(CREATE_W, CREATE_H, "Simple example", NULL, NULL);
     if (!window)
     {
@@ -140,16 +152,18 @@ int main(void)
     glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
                           sizeof(vertices[0]), (void *)(sizeof(float) * 2));
 
-    int CUSTOM_W = 800, CUSTOM_H = 600;
+    glfwSetWindowSizeCallback(window, winResizedCallback);
+
     if (CUSTOM_W != CREATE_W || CUSTOM_H != CREATE_H)
     {
         glfwSetWindowSize(window, CUSTOM_W, CUSTOM_H);
         int wc, hc;
-        while (1)
+        while (!customResizeDone)
         {
-            glfwGetWindowSize(window, &wc, &hc);
+            glfwPollEvents();
+         /*   glfwGetWindowSize(window, &wc, &hc);
             if (wc == CUSTOM_W && hc == CUSTOM_H)
-                break;
+                break;*/
             usleep(50 * 1000); // sleep 50 ms
         }
     }
