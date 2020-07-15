@@ -48,9 +48,9 @@ static const struct
     float r, g, b;
 } vertices[3] =
     {
-        {-0.6f, -0.4f, 1.f, 0.f, 0.f},
-        {0.6f, -0.4f, 0.f, 1.f, 0.f},
-        {0.f, 0.6f, 0.f, 0.f, 1.f}};
+        {-1.f, -1.f, 1.f, 0.f, 0.f},
+        {1.f, -1.f, 0.f, 1.f, 0.f},
+        {0.f, 1.f, 0.f, 0.f, 1.f}};
 
 static const char *vertex_shader_text =
     "#version 110\n"
@@ -153,20 +153,20 @@ int main(void)
                           sizeof(vertices[0]), (void *)(sizeof(float) * 2));
 
     glfwSetWindowSizeCallback(window, winResizedCallback);
-
+        
     if (CUSTOM_W != CREATE_W || CUSTOM_H != CREATE_H)
     {
         glfwSetWindowSize(window, CUSTOM_W, CUSTOM_H);
         int wc, hc;
         while (!customResizeDone)
-        {
+        {            
             glfwPollEvents();
          /*   glfwGetWindowSize(window, &wc, &hc);
             if (wc == CUSTOM_W && hc == CUSTOM_H)
                 break;*/
             usleep(50 * 1000); // sleep 50 ms
         }
-    }
+    }        
     glfwGetFramebufferSize(window, &width, &height);
     printf("w:%d h:%d\n", width, height);
     ratio = width / (float)height;
@@ -174,7 +174,8 @@ int main(void)
     glViewport(0, 0, width, height);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    mat4x4_ortho(mvp, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+    //mat4x4_ortho(mvp, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+    mat4x4_identity(mvp);
 
     glUseProgram(program);
     glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat *)mvp);
